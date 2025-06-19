@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  # SQL Server Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: compliance-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=ComplianceDB123!
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./database/scripts:/docker-entrypoint-initdb.d
+    networks:
+      - compliance-network
+    restart: unless-stopped
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ComplianceDB123! -Q "SELECT 1" || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # .NET Core API Backend
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: compliance-backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;Database=ComplianceDB;User Id=sa;Password=ComplianceDB123!;TrustServerCertificate=true;MultipleActiveResultSets=true
+      - JWT__Secret=your-super-secret-key-that-is-at-least-32-characters-long-for-jwt-token-signing!
+      - JWT__Issuer=ComplianceAPI
+      - JWT__Audience=ComplianceApp
+      - JWT__ExpiryMinutes=60
+    ports:
+      - "5000:80"
+    volumes:
+      - backend_uploads:/app/wwwroot/uploads
+      - backend_logs:/app/logs
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - compliance-network
+    restart: unless-stopped
+    healthcheck:
+      test: curl --fail http://localhost:80/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Angular Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: compliance-frontend
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - compliance-network
+    restart: unless-stopped
+
+  # Redis (for caching and session management)
+  redis:
+    image: redis:7-alpine
+    container_name: compliance-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - compliance-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: redis-cli ping || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Email service (MailHog for development)
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: compliance-mailhog
+    ports:
+      - "1025:1025"  # SMTP port
+      - "8025:8025"  # Web UI port
+    networks:
+      - compliance-network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (optional - for production)
+  nginx:
+    image: nginx:alpine
+    container_name: compliance-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx-proxy.conf:/etc/nginx/nginx.conf:ro
+      - nginx_ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - compliance-network
+    restart: unless-stopped
+    profiles:
+      - production
+
+volumes:
+  sqlserver_data:
+  redis_data:
+  backend_uploads:
+  backend_logs:
+  nginx_ssl:
+
+networks:
+  compliance-network:
+    driver: bridge

@@ -1,0 +1,88 @@
+<div class="app-layout" [class.sidebar-collapsed]="isSidebarCollapsed">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">🏢</div>
+        <div class="logo-text">
+          <h2 class="brand-name">Compliance Pro</h2>
+          <p class="brand-subtitle">Enterprise System</p>
+        </div>
+      </div>
+      <button class="sidebar-toggle" 
+              (click)="toggleSidebar()" 
+              (keydown.enter)="toggleSidebar()"
+              (keydown.space)="toggleSidebar()"
+              [attr.aria-label]="isSidebarCollapsed ? 'Expand sidebar navigation' : 'Collapse sidebar navigation'"
+              [attr.aria-expanded]="!isSidebarCollapsed"
+              [title]="isSidebarCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'">
+        {{ isSidebarCollapsed ? '→' : '←' }}
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <ul class="nav-list">
+        <li *ngFor="let item of navigationItems" class="nav-item">
+          <a [routerLink]="item.route" class="nav-link" routerLinkActive="active">
+            <span class="nav-icon">{{ item.icon }}</span>
+            <span class="nav-text">{{ item.label }}</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-profile">
+        <div class="user-avatar">👤</div>
+        <div class="user-info">
+          <p class="user-name" *ngIf="getCurrentUser()">{{ getCurrentUser()?.fullName }}</p>
+          <p class="user-role" *ngIf="getCurrentUser()">{{ getCurrentUser()?.roles?.[0]?.name }}</p>
+        </div>
+        <button class="logout-btn" (click)="logout()" title="Logout">
+          🚪
+        </button>
+      </div>
+    </div>
+
+    <!-- Floating Toggle Button for Collapsed State -->
+    <button *ngIf="isSidebarCollapsed" 
+            class="floating-toggle" 
+            (click)="toggleSidebar()"
+            (keydown.enter)="toggleSidebar()"
+            (keydown.space)="toggleSidebar()"
+            aria-label="Expand sidebar navigation"
+            title="Expand Sidebar">
+      →
+    </button>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Content Header -->
+    <header class="content-header">
+      <div class="header-wrapper">
+        <div class="page-info">
+          <h1 class="page-title">Enterprise Compliance System</h1>
+          <p class="page-subtitle">Advanced compliance tracking and incident management</p>
+        </div>
+        
+        <div class="header-actions">
+          <div class="user-menu">
+            <div class="user-avatar-small">👤</div>
+            <span class="user-name-small" *ngIf="getCurrentUser()">{{ getCurrentUser()?.fullName }}</span>
+          </div>
+          <button class="btn btn-danger" (click)="logout()">
+            🚪 Logout
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content with Scrolling -->
+    <main class="page-content">
+      <div class="content-container">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+</div>

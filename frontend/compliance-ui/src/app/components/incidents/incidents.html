@@ -1,0 +1,165 @@
+<div class="incidents-container">
+  <div class="incidents-header">
+    <div class="header-left">
+      <h1>Incident Management</h1>
+      <p>Track and manage compliance incidents</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="toggleCreateForm()">
+        <span class="icon">➕</span>
+        Create Incident
+      </button>
+    </div>
+  </div>
+
+  <!-- Create Incident Form -->
+  <div *ngIf="showCreateForm" class="create-form-container">
+    <div class="form-card">
+      <div class="form-header">
+        <h3>Create New Incident</h3>
+        <button class="close-btn" (click)="toggleCreateForm()">✕</button>
+      </div>
+      <form [formGroup]="incidentForm" (ngSubmit)="onSubmit()">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="title">Title *</label>
+            <input type="text" id="title" formControlName="title" class="form-control" 
+                   placeholder="Enter incident title">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="description">Description *</label>
+            <textarea id="description" formControlName="description" class="form-control" 
+                      rows="3" placeholder="Describe the incident"></textarea>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="priority">Priority *</label>
+            <select id="priority" formControlName="priority" class="form-control">
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="category">Category *</label>
+            <select id="category" formControlName="category" class="form-control">
+              <option value="Security">Security</option>
+              <option value="Policy">Policy</option>
+              <option value="Documentation">Documentation</option>
+              <option value="Access Control">Access Control</option>
+              <option value="Data Protection">Data Protection</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="assignedTo">Assigned To</label>
+            <input type="text" id="assignedTo" formControlName="assignedTo" class="form-control" 
+                   placeholder="Assign to team member (optional)">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="toggleCreateForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="incidentForm.invalid">
+            Create Incident
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-container">
+    <div class="filter-tabs">
+      <button class="filter-tab" [class.active]="selectedFilter === 'all'" (click)="filterIncidents('all')">
+        All Incidents
+      </button>
+      <button class="filter-tab" [class.active]="selectedFilter === 'open'" (click)="filterIncidents('open')">
+        Open
+      </button>
+      <button class="filter-tab" [class.active]="selectedFilter === 'in progress'" (click)="filterIncidents('in progress')">
+        In Progress
+      </button>
+      <button class="filter-tab" [class.active]="selectedFilter === 'resolved'" (click)="filterIncidents('resolved')">
+        Resolved
+      </button>
+    </div>
+  </div>
+
+  <!-- Incidents List -->
+  <div class="incidents-list">
+    <div class="incidents-table">
+      <div class="table-header">
+        <div class="col-incident">Incident</div>
+        <div class="col-priority">Priority</div>
+        <div class="col-status">Status</div>
+        <div class="col-assigned">Assigned To</div>
+        <div class="col-creator">Created By</div>
+        <div class="col-date">Created</div>
+        <div class="col-actions">Actions</div>
+      </div>
+      
+      <div *ngFor="let incident of filteredIncidents" class="table-row">
+        <div class="col-incident">
+          <div class="incident-info">
+            <span class="incident-number">{{ incident.id }}</span>
+            <span class="incident-title">{{ incident.title }}</span>
+            <span class="incident-description">{{ incident.description }}</span>
+          </div>
+        </div>
+        <div class="col-priority">
+          <span class="priority-badge" [class]="getPriorityClass(incident.priority)">
+            {{ incident.priority }}
+          </span>
+        </div>
+        <div class="col-status">
+          <span class="status-badge" [class]="getStatusClass(incident.status)">
+            {{ incident.status }}
+          </span>
+        </div>
+        <div class="col-assigned">{{ incident.assignedTo }}</div>
+        <div class="col-creator">{{ incident.createdByName }}</div>
+        <div class="col-date">{{ incident.createdDate | date:'short' }}</div>
+        <div class="col-actions">
+          <div class="action-buttons">
+            <button *ngIf="incident.status === 'Open'" 
+                    class="action-btn" 
+                    (click)="updateStatus(incident, 'In Progress')" 
+                    title="Start Progress">
+              ▶️
+            </button>
+            <button *ngIf="incident.status === 'In Progress'" 
+                    class="action-btn" 
+                    (click)="updateStatus(incident, 'Resolved')" 
+                    title="Mark Resolved">
+              ✅
+            </button>
+            <button class="action-btn" 
+                    (click)="viewIncident(incident)"
+                    title="View Details">
+              👁️
+            </button>
+            <button class="action-btn" 
+                    (click)="editIncident(incident)"
+                    title="Edit">
+              ✏️
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="filteredIncidents.length === 0" class="empty-state">
+      <div class="empty-icon">📋</div>
+      <h3>No incidents found</h3>
+      <p>No incidents match the current filter criteria.</p>
+    </div>
+  </div>
+</div>

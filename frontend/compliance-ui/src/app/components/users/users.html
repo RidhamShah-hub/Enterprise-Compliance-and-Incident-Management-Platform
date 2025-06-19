@@ -1,0 +1,159 @@
+<div class="users-container">
+  <div class="users-header">
+    <h1>User Management</h1>
+    <p>Manage user accounts and permissions</p>
+  </div>
+
+  <div class="users-actions">
+    <button class="btn btn-primary" (click)="openCreateUserModal()">Add New User</button>
+    <button class="btn btn-secondary" (click)="openImportModal()">Import Users</button>
+    <button class="btn btn-secondary" (click)="exportUserList()">Export List</button>
+  </div>
+
+  <div class="users-table">
+    <div class="table-header">
+      <div>User</div>
+      <div>Role</div>
+      <div>Department</div>
+      <div>Last Login</div>
+      <div>Status</div>
+      <div>Actions</div>
+    </div>
+    
+    <div *ngFor="let user of users" class="table-row">
+      <div class="user-info">
+        <div class="user-avatar">👤</div>
+        <div>
+          <div class="user-name">{{ user.fullName }}</div>
+          <div class="user-email">{{ user.email }}</div>
+        </div>
+      </div>
+      <div>{{ user.role }}</div>
+      <div>{{ user.department }}</div>
+      <div>{{ getTimeAgo(user.lastLogin) }}</div>
+      <div><span [class]="'status-' + user.status.toLowerCase()">{{ user.status }}</span></div>
+      <div class="action-buttons">
+        <button class="action-btn" (click)="editUser(user)" title="Edit User">✏️</button>
+        <button class="action-btn" (click)="toggleUserStatus(user)" 
+                [title]="user.status === 'Active' ? 'Deactivate User' : 'Activate User'">
+          {{ user.status === 'Active' ? '🔒' : '🔓' }}
+        </button>
+        <button class="action-btn delete-btn" (click)="deleteUser(user)" title="Delete User">🗑️</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create User Modal -->
+<div class="modal-overlay" *ngIf="showCreateUserModal" (click)="closeCreateUserModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add New User</h3>
+      <button class="close-btn" (click)="closeCreateUserModal()">✕</button>
+    </div>
+    
+    <form class="modal-body" [formGroup]="userForm" (ngSubmit)="createUser()">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="firstName">First Name *</label>
+          <input type="text" id="firstName" formControlName="firstName" 
+                 placeholder="Enter first name" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="lastName">Last Name *</label>
+          <input type="text" id="lastName" formControlName="lastName" 
+                 placeholder="Enter last name" required>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="email">Email Address *</label>
+        <input type="email" id="email" formControlName="email" 
+               placeholder="Enter email address" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="username">Username *</label>
+        <input type="text" id="username" formControlName="username" 
+               placeholder="Enter username" required>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="role">Role</label>
+          <select id="role" formControlName="role">
+            <option value="Employee">Employee</option>
+            <option value="Compliance Officer">Compliance Officer</option>
+            <option value="Security Manager">Security Manager</option>
+            <option value="Administrator">Administrator</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="department">Department</label>
+          <select id="department" formControlName="department">
+            <option value="General">General</option>
+            <option value="IT">IT</option>
+            <option value="Security">Security</option>
+            <option value="Legal">Legal</option>
+            <option value="HR">HR</option>
+            <option value="Finance">Finance</option>
+            <option value="Marketing">Marketing</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeCreateUserModal()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="!userForm.valid">
+          Create User
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Import Users Modal -->
+<div class="modal-overlay" *ngIf="showImportModal" (click)="closeImportModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Import Users</h3>
+      <button class="close-btn" (click)="closeImportModal()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="import-instructions">
+        <h4>📋 Import Instructions</h4>
+        <ul>
+          <li>Supported formats: CSV files (.csv)</li>
+          <li>Required columns: First Name, Last Name, Email, Username, Role, Department</li>
+          <li>Maximum file size: 10MB</li>
+          <li>Duplicate emails will be skipped</li>
+        </ul>
+        <button class="btn btn-secondary btn-sm" (click)="downloadSampleCSV()" style="margin-top: 10px;">
+          📥 Download Sample CSV
+        </button>
+      </div>
+      
+      <div class="import-area">
+        <div class="upload-zone">
+          <div class="upload-icon">📁</div>
+          <p>Click to select file or drag and drop</p>
+          <p class="file-types">CSV files only</p>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeImportModal()">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" (click)="importUsers()">
+          Choose File & Import
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

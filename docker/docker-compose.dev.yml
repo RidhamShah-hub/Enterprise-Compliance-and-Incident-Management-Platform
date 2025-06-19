@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # SQL Server Database for Development
+  sqlserver-dev:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: compliance-sqlserver-dev
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=DevPassword123!
+      - MSSQL_PID=Developer
+    ports:
+      - "1434:1433"  # Different port to avoid conflicts
+    volumes:
+      - sqlserver_dev_data:/var/opt/mssql
+    networks:
+      - compliance-dev-network
+    restart: unless-stopped
+
+  # Redis for Development
+  redis-dev:
+    image: redis:7-alpine
+    container_name: compliance-redis-dev
+    ports:
+      - "6380:6379"  # Different port for dev
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - compliance-dev-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # MailHog for Development Email Testing
+  mailhog-dev:
+    image: mailhog/mailhog:latest
+    container_name: compliance-mailhog-dev
+    ports:
+      - "1026:1025"  # SMTP port
+      - "8026:8025"  # Web UI port
+    networks:
+      - compliance-dev-network
+    restart: unless-stopped
+
+volumes:
+  sqlserver_dev_data:
+  redis_dev_data:
+
+networks:
+  compliance-dev-network:
+    driver: bridge

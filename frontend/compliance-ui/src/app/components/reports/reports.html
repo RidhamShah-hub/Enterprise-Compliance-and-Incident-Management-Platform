@@ -1,0 +1,98 @@
+<div class="reports-container">
+  <div class="reports-header">
+    <h1>Reports & Analytics</h1>
+    <p>Generate and view compliance reports</p>
+  </div>
+
+  <!-- Report Templates Grid -->
+  <div class="reports-section">
+    <h2>Available Report Templates</h2>
+    <div class="reports-grid">
+      <div *ngFor="let template of reportTemplates" 
+           class="report-card"
+           [class.selected]="selectedReportType === template.id"
+           (click)="selectReportType(template.id)">
+        <div class="report-icon">{{ template.icon }}</div>
+        <h3>{{ template.title }}</h3>
+        <p>{{ template.description }}</p>
+        <div class="report-type-badge">{{ template.type | titlecase }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Generation Panel -->
+  <div class="report-generation" *ngIf="selectedReportType">
+    <h2>Generate Report</h2>
+    <div class="generation-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="startDate">Start Date</label>
+          <input type="date" id="startDate" [(ngModel)]="startDate" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="endDate">End Date</label>
+          <input type="date" id="endDate" [(ngModel)]="endDate" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="department">Department</label>
+          <select id="department" [(ngModel)]="selectedDepartment">
+            <option *ngFor="let dept of departments" [value]="dept.value">
+              {{ dept.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="generation-actions">
+        <button class="btn btn-secondary" (click)="selectedReportType = ''">
+          Cancel
+        </button>
+        <button class="btn btn-primary" (click)="generateReport()">
+          Generate Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Reports -->
+  <div class="recent-reports">
+    <h2>Recent Reports</h2>
+    <div class="reports-table">
+      <div class="table-header">
+        <div>Report Name</div>
+        <div>Type</div>
+        <div>Generated</div>
+        <div>Size</div>
+        <div>Status</div>
+        <div>Actions</div>
+      </div>
+      
+      <div *ngFor="let report of recentReports" class="table-row">
+        <div class="report-name">{{ report.title }}</div>
+        <div>{{ report.type }}</div>
+        <div>{{ report.generatedDate | date:'MMM d, y' }}</div>
+        <div>{{ report.fileSize }}</div>
+        <div>
+          <span [class]="getStatusClass(report.status)">{{ report.status }}</span>
+        </div>
+        <div class="action-buttons">
+          <button class="btn btn-sm btn-primary" 
+                  (click)="downloadExistingReport(report)"
+                  [disabled]="report.status !== 'Completed'">
+            Download PDF
+          </button>
+          <button class="btn btn-sm btn-danger" 
+                  (click)="deleteReport(report)">
+            Delete
+          </button>
+        </div>
+      </div>
+      
+      <div *ngIf="recentReports.length === 0" class="no-reports">
+        <p>No reports generated yet. Create your first report using the templates above.</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,141 @@
+<div class="compliance-container">
+  <div class="compliance-header">
+    <h1>Compliance Management</h1>
+    <p>Monitor and maintain regulatory compliance</p>
+  </div>
+
+  <!-- Overall Compliance Score -->
+  <div class="overall-score-card">
+    <div class="score-display">
+      <div class="score-value" [class]="getScoreClass(overallScore)">{{ overallScore }}%</div>
+      <div class="score-label">Overall Compliance Score</div>
+    </div>
+    <div class="score-trend">
+      <span class="trend-indicator positive">+3%</span>
+      <span class="trend-label">from last quarter</span>
+    </div>
+  </div>
+
+  <!-- Compliance Areas Grid -->
+  <div class="compliance-areas">
+    <h2>Compliance Areas</h2>
+    <div class="areas-grid">
+      <div *ngFor="let area of complianceAreas" class="area-card" (click)="selectArea(area.name)">
+        <div class="area-header">
+          <h3>{{ area.name }}</h3>
+          <span class="area-status" [class]="getStatusClass(area.status)">{{ area.status }}</span>
+        </div>
+        
+        <div class="area-score">
+          <div class="score-circle" [class]="getScoreClass(area.score)">
+            <span class="score-number">{{ area.score }}%</span>
+          </div>
+        </div>
+        
+        <div class="area-progress">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="(area.completedRequirements / area.requirements) * 100"></div>
+          </div>
+          <span class="progress-text">{{ area.completedRequirements }}/{{ area.requirements }} requirements</span>
+        </div>
+        
+        <div class="area-footer">
+          <div class="assessment-info">
+            <span class="last-assessment">Last: {{ area.lastAssessment | date:'short' }}</span>
+            <span class="next-assessment">Next: {{ area.nextAssessment | date:'short' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Requirements Section -->
+  <div class="requirements-section">
+    <div class="section-header">
+      <h2>Compliance Requirements</h2>
+      <div class="area-filter">
+        <button class="filter-btn" [class.active]="selectedArea === 'all'" (click)="selectArea('all')">
+          All Areas
+        </button>
+        <button *ngFor="let area of complianceAreas" 
+                class="filter-btn" 
+                [class.active]="selectedArea === area.name" 
+                (click)="selectArea(area.name)">
+          {{ area.name }}
+        </button>
+      </div>
+    </div>
+
+    <div class="requirements-list">
+      <div *ngFor="let requirement of getFilteredRequirements()" class="requirement-card">
+        <div class="requirement-header">
+          <div class="requirement-title">{{ requirement.title }}</div>
+          <div class="requirement-meta">
+            <span class="requirement-priority" [class]="getPriorityClass(requirement.priority)">
+              {{ requirement.priority }}
+            </span>
+            <span class="requirement-status" [class]="getStatusClass(requirement.status)">
+              {{ requirement.status }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="requirement-description">{{ requirement.description }}</div>
+        
+        <div class="requirement-footer">
+          <div class="requirement-details">
+            <span class="assigned-to">👤 {{ requirement.assignedTo }}</span>
+            <span class="due-date">📅 Due: {{ requirement.dueDate | date:'short' }}</span>
+            <span class="area-tag">🏷️ {{ requirement.area }}</span>
+          </div>
+          <div class="requirement-actions">
+            <button class="action-btn" title="View Details">👁️</button>
+            <button class="action-btn" title="Edit">✏️</button>
+            <button *ngIf="requirement.status !== 'Complete'" class="action-btn" title="Mark Complete">✅</button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="getFilteredRequirements().length === 0" class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>No requirements found</h3>
+        <p>No requirements match the current filter.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="quick-stats">
+    <div class="stat-card">
+      <div class="stat-icon">⏰</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ overdueRequirements }}</div>
+        <div class="stat-label">Overdue Requirements</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">🔄</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ inProgressRequirements }}</div>
+        <div class="stat-label">In Progress</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ completeRequirements }}</div>
+        <div class="stat-label">Completed</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">📊</div>
+      <div class="stat-content">
+        <div class="stat-value">{{ completionPercentage }}%</div>
+        <div class="stat-label">Completion Rate</div>
+      </div>
+    </div>
+  </div>
+</div>

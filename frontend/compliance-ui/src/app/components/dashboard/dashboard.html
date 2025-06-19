@@ -1,0 +1,401 @@
+<div class="dashboard-container">
+  <!-- Enhanced Header with Gradient Background -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1>Compliance Dashboard</h1>
+        <p>Monitor compliance status and incident management across your organization</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary" (click)="createIncident()">
+          <span class="btn-icon">📋</span>
+          New Incident
+        </button>
+        <button class="btn btn-outline" (click)="generateReport()">
+          <span class="btn-icon">📊</span>
+          Generate Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Key Metrics Cards -->
+  <div class="metrics-grid">
+    <div *ngFor="let metric of metrics; let i = index" 
+         class="metric-card" 
+         [style.animation-delay.ms]="i * 100">
+      <div class="metric-background"></div>
+      <div class="metric-icon" [class]="'metric-icon-' + (i + 1)">
+        {{ metric.icon }}
+      </div>
+      <div class="metric-content">
+        <h3>{{ metric.title }}</h3>
+        <div class="metric-value">{{ metric.value }}</div>
+        <div class="metric-change" [class]="metric.changeType">
+          <span class="change-indicator">
+            {{ metric.change > 0 ? '↗' : '↘' }}
+          </span>
+          <span>{{ metric.change > 0 ? '+' : '' }}{{ metric.change }}</span>
+          <span class="change-label">from last month</span>
+        </div>
+      </div>
+      <div class="metric-trend">
+        <div class="trend-line" [class]="metric.changeType"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhanced Dashboard Content Grid -->
+  <div class="dashboard-content">
+    <!-- Recent Incidents with Modern Design -->
+    <div class="dashboard-section incidents-section">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Recent Incidents</h2>
+          <span class="section-badge">{{ recentIncidents.length }} active</span>
+        </div>
+        <button class="btn btn-ghost" (click)="viewAllIncidents()">
+          View All
+          <span class="btn-arrow">→</span>
+        </button>
+      </div>
+      <div class="incidents-list">
+        <div *ngFor="let incident of recentIncidents; let i = index" 
+             class="incident-item" 
+             [style.animation-delay.ms]="i * 50"
+             (click)="viewIncident(incident.id)">
+          <div class="incident-header">
+            <div class="incident-id">{{ incident.id }}</div>
+            <div class="incident-meta">
+              <span class="incident-priority" [class]="getPriorityClass(incident.priority)">
+                <span class="priority-dot"></span>
+                {{ incident.priority }}
+              </span>
+              <span class="incident-status" [class]="getStatusClass(incident.status)">
+                {{ incident.status }}
+              </span>
+            </div>
+          </div>
+          <div class="incident-content">
+            <h4 class="incident-title">{{ incident.title }}</h4>
+            <div class="incident-details">
+              <span class="incident-date">
+                <span class="detail-icon">🕒</span>
+                {{ incident.createdDate | date:'MMM d, h:mm a' }}
+              </span>
+              <span class="incident-creator">
+                <span class="detail-icon">👤</span>
+                {{ incident.createdByName }}
+              </span>
+            </div>
+          </div>
+          <div class="incident-actions">
+            <button class="action-btn" (click)="$event.stopPropagation(); viewIncident(incident.id)" 
+                    title="View Details">
+              👁️
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enhanced Compliance Overview -->
+    <div class="dashboard-section compliance-section">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Compliance Overview</h2>
+        </div>
+        <button class="btn btn-ghost" (click)="viewComplianceDetails()">
+          View Details
+          <span class="btn-arrow">→</span>
+        </button>
+      </div>
+      <div class="compliance-dashboard">
+        <div class="compliance-score-container">
+          <div class="compliance-score">
+            <div class="score-circle">
+              <div class="score-value">94%</div>
+              <div class="score-label">Overall Compliance</div>
+            </div>
+            <div class="score-indicator increase">
+              <span class="indicator-icon">↗</span>
+              <span>+2% this month</span>
+            </div>
+          </div>
+        </div>
+        <div class="compliance-breakdown">
+          <div class="compliance-item">
+            <div class="item-header">
+              <span class="item-label">Data Protection</span>
+              <span class="item-value">96%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 96%"></div>
+            </div>
+          </div>
+          <div class="compliance-item">
+            <div class="item-header">
+              <span class="item-label">Security Policies</span>
+              <span class="item-value">92%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 92%"></div>
+            </div>
+          </div>
+          <div class="compliance-item">
+            <div class="item-header">
+              <span class="item-label">Access Control</span>
+              <span class="item-value">98%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 98%"></div>
+            </div>
+          </div>
+          <div class="compliance-item">
+            <div class="item-header">
+              <span class="item-label">Documentation</span>
+              <span class="item-value">89%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 89%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Secondary Content Row -->
+  <div class="secondary-content">
+    <!-- Enhanced Quick Actions -->
+    <div class="dashboard-section quick-actions-section">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Quick Actions</h2>
+        </div>
+      </div>
+      <div class="quick-actions-grid">
+        <button class="action-card" (click)="createIncident()">
+          <div class="action-icon">📋</div>
+          <div class="action-content">
+            <h4>Create Incident</h4>
+            <p>Report new incident</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
+        <button class="action-card" (click)="generateReport()">
+          <div class="action-icon">📊</div>
+          <div class="action-content">
+            <h4>Generate Report</h4>
+            <p>Create compliance report</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
+        <button class="action-card" (click)="startRiskAssessment()">
+          <div class="action-icon">🔍</div>
+          <div class="action-content">
+            <h4>Risk Assessment</h4>
+            <p>Evaluate security risks</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
+        <button class="action-card" (click)="openSystemSettings()">
+          <div class="action-icon">⚙️</div>
+          <div class="action-content">
+            <h4>System Settings</h4>
+            <p>Configure platform</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Enhanced Upcoming Tasks -->
+    <div class="dashboard-section tasks-section">
+      <div class="section-header">
+        <div class="section-title">
+          <h2>Upcoming Tasks</h2>
+          <span class="section-badge">3 pending</span>
+        </div>
+        <button class="btn btn-ghost" (click)="viewCalendar()">
+          View Calendar
+          <span class="btn-arrow">→</span>
+        </button>
+      </div>
+      <div class="tasks-list">
+        <div class="task-item">
+          <div class="task-indicator priority-high"></div>
+          <div class="task-content">
+            <h4 class="task-title">Quarterly Security Review</h4>
+            <p class="task-description">Comprehensive security audit and review</p>
+            <div class="task-meta">
+              <span class="task-date">
+                <span class="meta-icon">📅</span>
+                Due in 3 days
+              </span>
+              <span class="task-assignee">
+                <span class="meta-icon">👤</span>
+                Security Team
+              </span>
+            </div>
+          </div>
+          <div class="task-priority priority-high">High</div>
+        </div>
+        <div class="task-item">
+          <div class="task-indicator priority-medium"></div>
+          <div class="task-content">
+            <h4 class="task-title">Policy Update - Remote Work</h4>
+            <p class="task-description">Update remote work compliance policies</p>
+            <div class="task-meta">
+              <span class="task-date">
+                <span class="meta-icon">📅</span>
+                Due in 1 week
+              </span>
+              <span class="task-assignee">
+                <span class="meta-icon">👤</span>
+                HR Department
+              </span>
+            </div>
+          </div>
+          <div class="task-priority priority-medium">Medium</div>
+        </div>
+        <div class="task-item">
+          <div class="task-indicator priority-low"></div>
+          <div class="task-content">
+            <h4 class="task-title">Staff Training - Data Privacy</h4>
+            <p class="task-description">Monthly data privacy training session</p>
+            <div class="task-meta">
+              <span class="task-date">
+                <span class="meta-icon">📅</span>
+                Due in 2 weeks
+              </span>
+              <span class="task-assignee">
+                <span class="meta-icon">👤</span>
+                Training Team
+              </span>
+            </div>
+          </div>
+          <div class="task-priority priority-low">Low</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Incident Modal -->
+  <div class="modal-overlay" *ngIf="showCreateIncidentModal" (click)="closeCreateIncidentModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Create New Incident</h3>
+        <button class="close-btn" (click)="closeCreateIncidentModal()">✕</button>
+      </div>
+      
+      <form class="modal-body" (ngSubmit)="submitIncident()">
+        <div class="form-group">
+          <label for="title">Title *</label>
+          <input 
+            type="text" 
+            id="title" 
+            [(ngModel)]="newIncident.title" 
+            name="title"
+            placeholder="Enter incident title..."
+            required>
+        </div>
+        
+        <div class="form-group">
+          <label for="description">Description *</label>
+          <textarea 
+            id="description" 
+            [(ngModel)]="newIncident.description" 
+            name="description"
+            rows="4"
+            placeholder="Describe the incident..."
+            required></textarea>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="priority">Priority</label>
+            <select id="priority" [(ngModel)]="newIncident.priority" name="priority">
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="assignedTo">Assigned To</label>
+            <input 
+              type="text" 
+              id="assignedTo" 
+              [(ngModel)]="newIncident.assignedTo" 
+              name="assignedTo"
+              placeholder="Enter assignee name...">
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeCreateIncidentModal()">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">
+            Create Incident
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Generate Report Modal -->
+  <div class="modal-overlay" *ngIf="showReportModal" (click)="closeReportModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Generate Report</h3>
+        <button class="close-btn" (click)="closeReportModal()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Report Type</label>
+          <div class="report-options">
+            <label class="radio-option">
+              <input type="radio" name="reportType" value="compliance" checked>
+              <span>📊 Compliance Summary</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="reportType" value="incidents">
+              <span>🚨 Incident Analysis</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="reportType" value="risks">
+              <span>🔍 Risk Assessment</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="reportType" value="audit">
+              <span>📋 Audit Trail</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="startDate">Start Date</label>
+            <input type="date" id="startDate" name="startDate">
+          </div>
+          <div class="form-group">
+            <label for="endDate">End Date</label>
+            <input type="date" id="endDate" name="endDate">
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeReportModal()">
+            Cancel
+          </button>
+          <button type="button" class="btn btn-primary" (click)="generateSelectedReport()">
+            Generate Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
